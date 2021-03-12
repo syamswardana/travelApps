@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:travelApps/Firebase/auth_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:travelApps/UI/started_page.dart';
 import 'package:travelApps/UI/welcome_page.dart';
 import 'package:travelApps/UI/wrapper.dart';
 // import 'package:travelApps/Firebase/auth_services.dart';

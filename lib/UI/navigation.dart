@@ -1,7 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:travelApps/API/place_api.dart';
+import 'package:travelApps/API/weather_api.dart';
 import 'package:travelApps/Objek/activity.dart';
+import 'package:travelApps/Objek/place.dart';
+import 'package:travelApps/Objek/weather.dart';
 import 'package:travelApps/UI/explore_page.dart';
 import 'package:travelApps/UI/home_page.dart';
 import 'package:travelApps/UI/plan_page.dart';
@@ -17,6 +20,8 @@ class _NavigationState extends State<Navigation> {
   int _selectedIndex = 0;
   List<Activity> _activity = [];
   List<Widget> _baris = [];
+  List<Place> _places = [];
+  Weather _weather;
 
   _NavigationState() {
     _activity.add(new Activity(
@@ -65,26 +70,35 @@ class _NavigationState extends State<Navigation> {
       _baris.add(rowPlan(i, activity.time, activity.activityName,
           activity.place, activity.icon, activity.done));
     }
+    WeatherApi.determinePosition().then((posisition) {
+      WeatherApi.getWeather(
+              posisition.latitude.toString(), posisition.longitude.toString())
+          .then((weather) {
+        _weather = weather;
+        setState(() {});
+      });
+      PlaceApi.getPopularPlaces(
+              lat: posisition.latitude, long: posisition.longitude)
+          .then((places) {
+        _places = places;
+        setState(() {});
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: (_selectedIndex == 0)
-          ? HomePage.appbar()
-          : (_selectedIndex == 1)
-              ? PlanPage.appbar()
-              : (_selectedIndex == 2)
-                  ? ExplorePage.appbar()
-                  : SettingsPage.appbar(), //set appbar
       body: (_selectedIndex == 0)
-          ? HomePage.body(_activity)
+          ? HomePage(weather: _weather, activities: _activity)
           : (_selectedIndex == 1)
-              ? PlanPage.body()
+              ? PlanPage()
               : (_selectedIndex == 2)
-                  ? ExplorePage.body()
-                  : SettingsPage.body(context), //set body
+                  ? ExplorePage(
+                      places: _places,
+                    )
+                  : SettingsPage(),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,

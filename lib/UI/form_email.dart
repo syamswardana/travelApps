@@ -2,7 +2,6 @@ import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:travelApps/Firebase/auth_services.dart';
-import 'package:travelApps/UI/wrapper.dart';
 
 class FormEmail extends StatefulWidget {
   final bool isLogin;

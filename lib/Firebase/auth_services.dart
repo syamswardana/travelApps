@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthServices {
   static FirebaseAuth _auth = FirebaseAuth.instance;
+  static GoogleSignIn _googleSignIn = GoogleSignIn.standard();
 
   static Stream<User> get firebaseUserStream {
     return _auth.authStateChanges();
@@ -13,7 +14,7 @@ class AuthServices {
     // Trigger the authentication flow
     GoogleSignInAccount googleUser;
     try {
-      googleUser = await GoogleSignIn().signIn();
+      googleUser = await _googleSignIn.signIn();
     } catch (error) {
       print(error.message);
     }
@@ -38,7 +39,6 @@ class AuthServices {
       {@required String email, @required String password}) async {
     UserCredential userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
-    print(userCredential);
     return userCredential;
   }
 
@@ -51,5 +51,6 @@ class AuthServices {
 
   static signOut() async {
     await _auth.signOut();
+    await _googleSignIn.signOut();
   }
 }

@@ -1,11 +1,11 @@
 class Weather {
-  String lat;
-  String lon;
+  double lat;
+  double lon;
   String country;
   String city;
-  String temp;
+  double temp;
   String icon;
-  String weatherCode;
+  int weatherCode;
   String weatherDesc;
   Weather({
     this.lat,
@@ -19,14 +19,19 @@ class Weather {
   });
 
   factory Weather.fromMap(Map<String, dynamic> map) {
+    List<dynamic> data = map['data'];
+    Map<String, dynamic> weather = data[0];
+    Map<String, dynamic> icon = weather["weather"];
     return Weather(
-        city: map["city_name"],
-        country: map["country_code"],
-        lon: map['lon'],
-        lat: map["lat"],
-        temp: map["temp"],
-        icon: map["weather.icon"],
-        weatherCode: map['weather.code'],
-        weatherDesc: map["weather.description"]);
+        city: weather["city_name"],
+        country: weather["country_code"],
+        lon: weather['lon'],
+        lat: weather["lat"],
+        temp: weather["temp"] is int
+            ? weather["temp"].roundToDouble()
+            : weather["temp"],
+        icon: icon["icon"],
+        weatherCode: icon['code'],
+        weatherDesc: icon["description"]);
   }
 }

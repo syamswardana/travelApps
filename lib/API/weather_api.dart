@@ -5,9 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:travelApps/Objek/weather.dart';
 
 class WeatherApi {
-  String key = "2b9665ed49bb49eaae479880f8c5babc";
+  static String _key = "8be88ac344ce45ae97776e7066458d8c";
 
-  Future<Position> _determinePosition() async {
+  static Future<Position> determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -34,9 +34,9 @@ class WeatherApi {
     return await Geolocator.getCurrentPosition();
   }
 
-  static Future<Weather> getWeather(String lat, String long) async {
+  static Future<Weather> getWeather(String lat, String lon) async {
     String url =
-        "https://api.weatherbit.io/v2.0/current?lat=$lat&lon=$long&key=API_KEY";
+        "https://api.weatherbit.io/v2.0/current?lat=$lat&lon=$lon&key=$_key";
     var result = await http.post(url);
     var jsonObject = json.decode(result.body);
     return Weather.fromMap(jsonObject);

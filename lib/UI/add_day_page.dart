@@ -52,10 +52,10 @@ class _AddDayPageState extends State<AddDayPage> {
   @override
   Widget build(BuildContext context) {
     TextStyle textTab = new TextStyle(
-        color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold);
+        color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold);
     TextStyle subTab = new TextStyle(
       color: Colors.grey,
-      fontSize: 16,
+      fontSize: 12,
     );
 
     int listday = 4;
@@ -66,14 +66,17 @@ class _AddDayPageState extends State<AddDayPage> {
           backgroundColor: Colors.white,
           leading: BackButton(
             color: Colors.black,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
           elevation: 0,
-          toolbarHeight: 160,
           title: Text(
             "Add day plans",
             style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           centerTitle: true,
           bottom: TabBar(
@@ -81,41 +84,36 @@ class _AddDayPageState extends State<AddDayPage> {
             indicatorColor: Color(0xff3FD4A2),
             tabs: List<Widget>.generate(listday, (index) {
               String day = (index + 1).toString();
-              return SizedBox(
-                height: 70,
-                child: Tab(
-                    child: Container(
-                  margin: EdgeInsets.only(left: 27.5, right: 27.5),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        "Day $day",
-                        style: textTab,
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        "Maret $day",
-                        style: subTab,
-                      )
-                    ],
+              return Tab(
+                child: Container(
+                  margin: EdgeInsets.only(
+                    left: 10,
+                    right: 10,
                   ),
-                )),
+                  child: Text(
+                    "Maret $day",
+                    style: subTab,
+                  ),
+                ),
+                icon: Text(
+                  "Day $day",
+                  style: textTab,
+                ),
               );
             }),
           ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FlatButton(
-          height: 60,
           minWidth: MediaQuery.of(context).size.width - 40,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          child: Text(
-            "Next step",
-            style: TextStyle(color: Colors.white, fontSize: 20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            child: Text(
+              "Next step",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
           ),
           color: Color(0xff3FD4A2),
           onPressed: () {},
@@ -138,15 +136,15 @@ class _AddDayPageState extends State<AddDayPage> {
                             _selectTime(context);
                           },
                           child: Container(
-                            width: 145,
-                            height: 50,
+                            width: 110,
+                            padding: EdgeInsets.only(right: 10),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                                 border: Border.all(color: Colors.grey),
                                 borderRadius: BorderRadius.circular(25)),
                             child: TextFormField(
-                              style: TextStyle(fontSize: 18),
-                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 14),
+                              textAlign: TextAlign.left,
                               textAlignVertical: TextAlignVertical.center,
                               onSaved: (String val) {
                                 _setTime = val;
@@ -155,36 +153,39 @@ class _AddDayPageState extends State<AddDayPage> {
                               keyboardType: TextInputType.text,
                               controller: _timeController,
                               decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.access_time_outlined),
-                                  disabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                  // labelText: 'Time',
-                                  contentPadding: EdgeInsets.all(5)),
+                                prefixIcon:
+                                    Icon(Icons.access_time_outlined, size: 20),
+                                disabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide.none),
+                              ),
                             ),
                           ),
                         ),
                         Container(
-                            width: 230,
-                            height: 50,
+                            width: 170,
+                            height: 40,
                             padding: EdgeInsets.only(left: 25),
                             decoration: BoxDecoration(
                                 border: Border.all(color: Colors.grey),
                                 borderRadius: BorderRadius.circular(25)),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                SizedBox(
-                                  width: 155,
+                                Expanded(
                                   child: TextField(
+                                    textAlignVertical: TextAlignVertical.center,
                                     decoration: InputDecoration(
                                         border: InputBorder.none,
-                                        hintText: "Activity"),
+                                        hintText: "Activity",
+                                        hintStyle: TextStyle(fontSize: 14)),
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.ac_unit),
-                                  onPressed: () {
-                                    print("test");
-                                  },
+                                  icon: Icon(
+                                    Icons.ac_unit,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {},
                                 )
                               ],
                             ))
@@ -196,14 +197,16 @@ class _AddDayPageState extends State<AddDayPage> {
                     color: Color(0xffDEF4ED),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30)),
-                    height: 60,
                     minWidth: double.infinity,
-                    child: Text(
-                      "Add activity",
-                      style: TextStyle(
-                          color: Color(0xff3FD4A2),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      child: Text(
+                        "Add activity",
+                        style: TextStyle(
+                            color: Color(0xff3FD4A2),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                   )
                 ],

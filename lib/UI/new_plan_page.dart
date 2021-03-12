@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:travelApps/UI/add_day_page.dart';
 
 class NewPlanPage extends StatefulWidget {
   @override
@@ -38,7 +39,9 @@ class _NewPlanPageState extends State<NewPlanPage> {
         elevation: 0,
         leading: BackButton(
           color: Colors.black,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         centerTitle: true,
         title: Text(
@@ -94,16 +97,23 @@ class _NewPlanPageState extends State<NewPlanPage> {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: FlatButton(
-                  height: 60,
                   minWidth: double.infinity,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30)),
-                  child: Text(
-                    "Next step",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    child: Text(
+                      "Next step",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ),
                   color: Color(0xff3FD4A2),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return AddDayPage();
+                    }));
+                  },
                 ),
               ),
             )

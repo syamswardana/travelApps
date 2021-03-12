@@ -36,6 +36,7 @@ dependencies:
   syncfusion_flutter_datepicker: ^18.4.44-beta
   timeline_tile: ^1.0.0
   http: ^0.12.2
+  flutter_typeahead: ^2.0.0
 
 dev_dependencies:
   flutter_test:

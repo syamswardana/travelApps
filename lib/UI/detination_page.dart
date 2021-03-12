@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:travelApps/API/place_api.dart';
+import 'package:travelApps/Objek/place.dart';
 
 class DestinationPage extends StatefulWidget {
+  Place place;
+  DestinationPage({this.place});
   @override
-  _DestinationPageState createState() => _DestinationPageState();
+  _DestinationPageState createState() => _DestinationPageState(place: place);
 }
 
 class _DestinationPageState extends State<DestinationPage> {
+  Place place;
+  _DestinationPageState({this.place});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,10 +23,10 @@ class _DestinationPageState extends State<DestinationPage> {
         // margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
         decoration: BoxDecoration(
           image: DecorationImage(
-              image: AssetImage("assets/bali.jpg"),
-              fit: BoxFit.cover,
+              image: PlaceApi.getImage(place.photoReferences),
+              fit: BoxFit.fitHeight,
               colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.5), BlendMode.darken)),
+                  Colors.black.withOpacity(0.3), BlendMode.darken)),
         ),
         child: Stack(
           children: [
@@ -28,39 +34,42 @@ class _DestinationPageState extends State<DestinationPage> {
               alignment: Alignment.topLeft,
               child: BackButton(
                 color: Colors.white,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
             ),
             Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   width: double.infinity,
-                  height: 350,
                   padding: EdgeInsets.all(20),
-                  alignment: Alignment.topLeft,
+                  alignment: Alignment.bottomLeft,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        "Bali, Indonesia",
+                        place.name,
                         style: TextStyle(
                             color: Colors.white,
                             fontFamily: "DancingScript",
                             fontWeight: FontWeight.bold,
-                            fontSize: 45),
+                            fontSize: 26),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 10,
                       ),
                       Text(
-                        "Bali adalah sebuah pulau di Indonesia yang dikenal karena memiliki pegunungan berapi yang hijau, terasering sawah yang unik, pantai, dan terumbu karang yang cantik.",
+                        place.formattedAddress ?? place.vicinity,
                         style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 14,
                             fontWeight: FontWeight.w200),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 15,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -68,40 +77,40 @@ class _DestinationPageState extends State<DestinationPage> {
                           Row(
                             children: [
                               RatingBarIndicator(
-                                rating: 4.92,
+                                rating: place.rating,
                                 itemBuilder: (context, index) => Icon(
                                   Icons.star,
                                   color: Colors.amber,
                                 ),
                                 itemCount: 5,
-                                itemSize: 25.0,
+                                itemSize: 18.0,
                               ),
                               SizedBox(
                                 width: 10,
                               ),
                               Text(
-                                "4.92",
+                                place.rating.toString(),
                                 style: TextStyle(
-                                    color: Colors.white, fontSize: 16),
+                                    color: Colors.white, fontSize: 12),
                               ),
                               SizedBox(
                                 width: 10,
                               ),
                               Text(
-                                "(31 reviews)",
+                                place.reviews.length.toString() + " Reviews",
                                 style: TextStyle(
-                                    color: Colors.white, fontSize: 16),
+                                    color: Colors.white, fontSize: 12),
                               ),
                             ],
                           ),
-                          Text(
-                            "See reviews",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
+                          // Text(
+                          //   "See reviews",
+                          //   style: TextStyle(color: Colors.white, fontSize: 12),
+                          // ),
                         ],
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 15,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,29 +119,33 @@ class _DestinationPageState extends State<DestinationPage> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(45)),
                             color: Colors.grey[800].withOpacity(0.65),
-                            minWidth: 185,
-                            height: 60,
+                            minWidth: 155,
                             onPressed: () {},
-                            child: Text(
-                              "Read more",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Text(
+                                "Photos",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18),
+                              ),
                             ),
                           ),
                           FlatButton(
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(45)),
                             color: Colors.white,
-                            minWidth: 185,
-                            height: 60,
+                            minWidth: 155,
                             onPressed: () {},
-                            child: Text("Plan trip",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 20)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Text("See Reviews",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18)),
+                            ),
                           )
                         ],
                       )
