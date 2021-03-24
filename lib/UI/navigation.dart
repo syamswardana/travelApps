@@ -9,7 +9,7 @@ import 'package:travelApps/UI/explore_page.dart';
 import 'package:travelApps/UI/home_page.dart';
 import 'package:travelApps/UI/plan_page.dart';
 import 'package:travelApps/UI/settings_page.dart';
-import 'package:travelApps/baseUI/row_plan.dart';
+import 'package:travelApps/baseUI/row_activity.dart';
 
 class Navigation extends StatefulWidget {
   @override
@@ -25,60 +25,57 @@ class _NavigationState extends State<Navigation> {
 
   _NavigationState() {
     _activity.add(new Activity(
-        "08.30",
-        "Breakfast",
-        "Warung padang",
-        Icon(
-          Icons.fastfood,
-          color: Color(0xff3FD4A2),
-        ),
-        true));
+        time: new DateTime(2021, 3, 16, 08, 30),
+        activityName: "Breakfast",
+        place: "Warung padang",
+        icon: Icons.shopping_bag.codePoint,
+        done: true));
     _activity.add(new Activity(
-        "10.00",
-        "Swiming",
-        "Waterboom Boomer",
-        Icon(
-          Icons.pool,
-          color: Color(0xff3FD4A2),
-        )));
+        time: new DateTime(2021, 3, 16, 10, 00),
+        activityName: "Swiming",
+        place: "Waterboom Boomer",
+        icon: Icons.shopping_bag.codePoint));
     _activity.add(new Activity(
-        "08.30",
-        "Shoping",
-        "Matahari",
-        Icon(
-          Icons.shopping_bag,
-          color: Color(0xff3FD4A2),
-        )));
+        time: new DateTime(2021, 3, 16, 12, 00),
+        activityName: "Shoping",
+        place: "Matahari",
+        icon: Icons.shopping_bag.codePoint));
     _activity.add(new Activity(
-        "08.30",
-        "Shoping",
-        "Matahari",
-        Icon(
-          Icons.shopping_bag,
-          color: Color(0xff3FD4A2),
-        )));
+        time: new DateTime(2021, 3, 16, 15, 00),
+        activityName: "Shoping",
+        place: "Matahari",
+        icon: Icons.shopping_bag.codePoint));
     _activity.add(new Activity(
-        "08.30",
-        "Shoping",
-        "Matahari",
-        Icon(
-          Icons.shopping_bag,
-          color: Color(0xff3FD4A2),
-        )));
+        time: new DateTime(2021, 3, 16, 19, 30),
+        activityName: "Shoping",
+        place: "Matahari",
+        icon: Icons.shopping_bag.codePoint));
     for (int i = 0; i < _activity.length; i++) {
       Activity activity = _activity[i];
-      _baris.add(rowPlan(i, activity.time, activity.activityName,
+      _baris.add(RowActivity(i, activity.time, activity.activityName,
           activity.place, activity.icon, activity.done));
     }
-    WeatherApi.determinePosition().then((posisition) {
+    WeatherApi.determinePosition().then((position) {
       WeatherApi.getWeather(
-              posisition.latitude.toString(), posisition.longitude.toString())
+              position.latitude.toString(), position.longitude.toString())
           .then((weather) {
         _weather = weather;
         setState(() {});
       });
       PlaceApi.getPopularPlaces(
-              lat: posisition.latitude, long: posisition.longitude)
+              lat: position.latitude, long: position.longitude)
+          .then((places) {
+        _places = places;
+        setState(() {});
+      });
+    }).catchError((error) {
+      Position pos = Position(latitude: -7.4884744, longitude: 112.6588699);
+      WeatherApi.getWeather(pos.latitude.toString(), pos.longitude.toString())
+          .then((weather) {
+        _weather = weather;
+        setState(() {});
+      });
+      PlaceApi.getPopularPlaces(lat: pos.latitude, long: pos.longitude)
           .then((places) {
         _places = places;
         setState(() {});

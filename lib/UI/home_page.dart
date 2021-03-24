@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:travelApps/Firebase/auth_services.dart';
 import 'package:travelApps/Objek/activity.dart';
 import 'package:travelApps/Objek/weather.dart';
-import 'package:travelApps/baseUI/row_plan.dart';
+import 'package:travelApps/baseUI/row_activity.dart';
 
 class HomePage extends StatelessWidget {
   final Weather weather;
@@ -10,6 +12,7 @@ class HomePage extends StatelessWidget {
   HomePage({@required this.activities, @required this.weather});
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<User>(context);
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 65,
@@ -31,16 +34,19 @@ class HomePage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Image.network(
-                            weather != null
-                                ? "https://www.weatherbit.io/static/img/icons/${weather.icon}.png"
-                                : "https://www.weatherbit.io/static/img/icons/t01d.png",
-                            scale: 5,
-                          ),
+                          weather != null
+                              ? Image.network(
+                                  "https://www.weatherbit.io/static/img/icons/${weather.icon}.png",
+                                  scale: 5,
+                                )
+                              : Image.asset(
+                                  "assets/t01d.png",
+                                  scale: 5,
+                                ),
                           Text(
                             weather != null
                                 ? " ${weather.temp}°, ${weather.city}"
-                                : "27°, Oslo",
+                                : "27°, Surabaya",
                             style: TextStyle(
                               fontSize: 14,
                             ),
@@ -48,10 +54,12 @@ class HomePage extends StatelessWidget {
                         ],
                       ),
                       SizedBox(
-                        height: 2,
+                        height: 5,
                       ),
                       Text(
-                        "Hello Syams",
+                        (user.displayName != "")
+                            ? "Hello ${user.displayName}"
+                            : "Hello ${user.email}",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -66,9 +74,17 @@ class HomePage extends StatelessWidget {
                     alignment: Alignment.center,
                     width: 40,
                     height: 40,
-                    child: CircleAvatar(
-                      backgroundImage: AssetImage(
-                        "assets/crop.jpg",
+                    padding: EdgeInsets.only(bottom: 5),
+                    decoration: BoxDecoration(
+                        color: Color(0xff3FD4A2),
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Text(
+                      (user.displayName != "")
+                          ? "${user.displayName.characters.characterAt(0)}"
+                          : "${user.email.characters.characterAt(0)}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
                       ),
                     )),
               )
@@ -177,7 +193,7 @@ class HomePage extends StatelessWidget {
               itemCount: activities.length,
               itemBuilder: (context, index) {
                 return (index == 0)
-                    ? rowPlan(
+                    ? RowActivity(
                         index,
                         activities[index].time,
                         activities[index].activityName,
@@ -186,7 +202,7 @@ class HomePage extends StatelessWidget {
                         activities[index].done,
                         isFirst: true)
                     : (index == activities.length - 1)
-                        ? rowPlan(
+                        ? RowActivity(
                             index,
                             activities[index].time,
                             activities[index].activityName,
@@ -194,7 +210,7 @@ class HomePage extends StatelessWidget {
                             activities[index].icon,
                             activities[index].done,
                             isLast: true)
-                        : rowPlan(
+                        : RowActivity(
                             index,
                             activities[index].time,
                             activities[index].activityName,

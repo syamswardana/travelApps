@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:travelApps/API/place_api.dart';
-import 'package:travelApps/Objek/detination.dart';
 import 'package:travelApps/Objek/place.dart';
 import 'package:travelApps/UI/destination_type.dart';
 import 'package:travelApps/UI/detination_page.dart';

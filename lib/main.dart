@@ -1,14 +1,19 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:travelApps/Firebase/auth_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:travelApps/UI/loading_page.dart';
 import 'package:travelApps/UI/welcome_page.dart';
 import 'package:travelApps/UI/wrapper.dart';
+import 'package:travelApps/bloc/activitiescrud_bloc.dart';
+import 'package:travelApps/bloc/activitiesonline_bloc.dart';
 // import 'package:travelApps/Firebase/auth_services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // FirebaseFirestore firestore = FirebaseFirestore.instance;
   runApp(MyApp());
 }
 
@@ -55,23 +60,42 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // return MaterialApp(
+    //   home: Scaffold(
+    //     body: LoadingPage(),
+    //   ),
+    // );
     if (_error) {
-      return CircularProgressIndicator();
+      return MaterialApp(
+        home: LoadingPage(),
+      );
     }
 
     // Show a loader until FlutterFire is initialized
     if (!_initialized) {
-      return CircularProgressIndicator();
+      return MaterialApp(
+        home: LoadingPage(),
+      );
     }
     return StreamProvider.value(
         value: AuthServices.firebaseUserStream,
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: (!_isLoaded)
-              ? Center(child: CircularProgressIndicator())
-              : (_isFirst)
-                  ? WelcomePage()
-                  : Wrapper(),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<ActivitiesCrudBloc>(
+              create: (context) => ActivitiesCrudBloc(),
+            ),
+            BlocProvider<ActivitiesOnlineBloc>(
+              create: (context) => ActivitiesOnlineBloc(),
+            )
+          ],
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: (!_isLoaded)
+                ? Center(child: CircularProgressIndicator())
+                : (_isFirst)
+                    ? WelcomePage()
+                    : Wrapper(),
+          ),
         ));
   }
 }

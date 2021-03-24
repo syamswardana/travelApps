@@ -8,6 +8,10 @@ class NewPlanPage extends StatefulWidget {
 }
 
 class _NewPlanPageState extends State<NewPlanPage> {
+  DateTime _rangeStartDate;
+  DateTime _rangeEndDate;
+  TextEditingController _planName = TextEditingController(text: "");
+  String _ePlanName;
   @override
   void initState() {
     super.initState();
@@ -20,9 +24,10 @@ class _NewPlanPageState extends State<NewPlanPage> {
 
   void _onSelectionChanged(DateRangePickerSelectionChangedArgs args) {
     if (args.value is PickerDateRange) {
-      final DateTime rangeStartDate = args.value.startDate;
-      final DateTime rangeEndDate = args.value.endDate;
+      _rangeStartDate = args.value.startDate;
+      _rangeEndDate = args.value.endDate;
     } else if (args.value is DateTime) {
+      print("one");
       final DateTime selectedDate = args.value;
     } else if (args.value is List<DateTime>) {
       final List<DateTime> selectedDates = args.value;
@@ -34,6 +39,7 @@ class _NewPlanPageState extends State<NewPlanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -53,72 +59,74 @@ class _NewPlanPageState extends State<NewPlanPage> {
         height: double.infinity,
         width: double.infinity,
         padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.all(10),
-              height: 100,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/bali.jpg"), fit: BoxFit.cover),
-                  borderRadius: BorderRadius.circular(7)),
-              child: RichText(
-                text: TextSpan(
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                    children: [
-                      TextSpan(text: "Destination\n"),
-                      TextSpan(
-                          text: "Bali, Indonesia",
-                          style: TextStyle(
-                              fontFamily: "DancingScript",
-                              fontWeight: FontWeight.w800,
-                              fontSize: 26))
-                    ]),
+        child: Stack(children: [
+          ListView(
+            children: [
+              TextFormField(
+                style: TextStyle(fontSize: 14),
+                controller: _planName,
+                onChanged: (value) {
+                  (value != null || value != "") ? _ePlanName = null : null;
+                },
+                validator: (value) {
+                  return (_ePlanName != null || _ePlanName != "")
+                      ? _ePlanName
+                      : null;
+                },
+                autovalidateMode: AutovalidateMode.always,
+                decoration: InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                    labelText: "Plan name",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25))),
               ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SfDateRangePicker(
-              onSelectionChanged: _onSelectionChanged,
-              selectionMode: DateRangePickerSelectionMode.range,
-              selectionTextStyle: const TextStyle(color: Colors.white),
-              selectionColor: Color(0xff3FD4A2),
-              startRangeSelectionColor: Color(0xff3FD4A2),
-              endRangeSelectionColor: Color(0xff3FD4A2),
-              rangeSelectionColor: Colors.green[50],
-              rangeTextStyle: const TextStyle(
-                color: Colors.black,
+              SizedBox(
+                height: 20,
               ),
-            ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: FlatButton(
-                  minWidth: double.infinity,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      "Next step",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                  color: Color(0xff3FD4A2),
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return AddDayPage();
-                    }));
-                  },
+              SfDateRangePicker(
+                onSelectionChanged: _onSelectionChanged,
+                selectionMode: DateRangePickerSelectionMode.range,
+                selectionTextStyle: const TextStyle(color: Colors.white),
+                selectionColor: Color(0xff3FD4A2),
+                startRangeSelectionColor: Color(0xff3FD4A2),
+                endRangeSelectionColor: Color(0xff3FD4A2),
+                rangeSelectionColor: Colors.green[50],
+                rangeTextStyle: const TextStyle(
+                  color: Colors.black,
                 ),
               ),
-            )
-          ],
-        ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: FlatButton(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25)),
+              minWidth: double.infinity,
+              onPressed: () {
+                if (_rangeStartDate != null && _planName.text != "") {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return AddDayPage(
+                      startDate: _rangeStartDate,
+                      endDate: _rangeEndDate,
+                      planName: _planName.text,
+                    );
+                  }));
+                } else {
+                  _ePlanName = "Insert plane name";
+                  setState(() {});
+                }
+              },
+              color: Color(0xff3FD4A2),
+              child: Text(
+                "Continue",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          )
+        ]),
       ),
     );
   }

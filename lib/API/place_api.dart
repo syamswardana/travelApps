@@ -33,7 +33,7 @@ class PlaceApi {
 
   static NetworkImage getImage(String references) {
     return NetworkImage(
-        "https://maps.googleapis.com/maps/api/place/photo?maxwidth=720&photoreference=$references&key=$_key");
+        "https://maps.googleapis.com/maps/api/place/photo?maxwidth=480&photoreference=$references&key=$_key");
   }
 
   static Future<List<PlacePrediction>> getPredictions(String input) async {

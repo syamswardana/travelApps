@@ -92,7 +92,6 @@ class _FormEmailState extends State<FormEmail> {
                 style: TextStyle(fontSize: 14, color: Colors.black),
                 autovalidateMode: AutovalidateMode.always,
                 validator: (value) {
-                  print(_errorPassword);
                   return (_errorPassword != null) ? _errorPassword : null;
                 },
                 obscureText: true,
@@ -193,16 +192,18 @@ class _FormEmailState extends State<FormEmail> {
                       try {
                         await AuthServices.signUpEmail(
                             email: _email.text, password: _password.text);
-                        Navigator.pop(context);
+                        Navigator.of(context).pop();
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'weak-password') {
                           _errorPassword = "Password terlalu lemah";
-                          print("Password sdh digunakan");
                         } else if (e.code == 'email-already-in-use') {
                           _errorEmail = "Email sudah digunakan";
                         }
                         setState(() {});
                       } catch (e) {
+                        SnackBar(
+                          content: Text(e.code),
+                        );
                         print(e);
                       }
                     }
@@ -210,12 +211,16 @@ class _FormEmailState extends State<FormEmail> {
                     try {
                       await AuthServices.signInEmail(
                           email: _email.text, password: _password.text);
-                      Navigator.pop(context);
+                      Navigator.of(context).pop();
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'user-not-found') {
                         _errorEmail = "User tidak ditemukan";
                       } else if (e.code == 'wrong-password') {
                         _errorPassword = "Password tidak cocok";
+                      } else {
+                        SnackBar(
+                          content: Text(e.code),
+                        );
                       }
                       setState(() {});
                     }
