@@ -1,42 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'package:travelApps/Firebase/auth_services.dart';
 
 class SettingsPage extends StatelessWidget {
-  bool _switchPermission = false;
-  Future<void> changePermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.deniedForever) {
-        // Permissions are denied forever, handle appropriately.
-        return Future.error(
-            'Location permissions are permanently denied, we cannot request permissions.');
-      }
-
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-      if (permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always) {
-        _switchPermission = true;
-      }
-    } else {
-      // LocationPermission.denied;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<User>(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -51,36 +21,36 @@ class SettingsPage extends StatelessWidget {
         width: double.infinity,
         child: ListView(children: [
           listSetting(
-              CircleAvatar(
-                radius: 25,
-                backgroundImage: AssetImage(
-                  "assets/crop.jpg",
+              Container(
+                alignment: Alignment.center,
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Color(0xff3FD4A2)),
+                child: Text(
+                  (user.displayName != null)
+                      ? "${user.displayName.characters.characterAt(0)}"
+                      : "${user.email.characters.characterAt(0)}",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                  softWrap: true,
                 ),
               ),
-              "Syams",
-              "Programmer",
+              (user.displayName != null) ? user.displayName : user.email,
+              (user.displayName != null) ? user.email : "Freelancer",
               RaisedButton(
                 child: Text(
-                  "Edit profile",
-                  style: TextStyle(color: Color(0xff3FD4A2)),
+                  "Edit",
+                  style: TextStyle(color: Color(0xff3FD4A2), fontSize: 12),
                 ),
                 onPressed: () {},
                 color: Color(0xffE2F9F1),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
               )),
-          // listSetting(
-          //   Icon(Icons.location_on),
-          //   "Location Permission",
-          //   "Switch to change permission",
-          //   Switch(
-          //     value: _switchPermission,
-          //     onChanged: (bool value) {
-          //       changePermission();
-          //     },
-          //   ),
-          //   true,
-          // ),
           listSetting(
               //payment
               Icon(Icons.account_balance_wallet),
@@ -200,6 +170,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                   Text(
                     subtitle,
+                    softWrap: true,
                     style: TextStyle(
                         color: Colors.grey, fontSize: (!kecil) ? 14 : 12),
                   )

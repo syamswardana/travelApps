@@ -18,3 +18,11 @@ class ActivitiesOnlineLoaded extends ActivitiesOnlineState {
   @override
   List<Object> get props => [activities, deletedActivities];
 }
+
+class ActivitiesOnlineError extends ActivitiesOnlineState {
+  final String error;
+  ActivitiesOnlineError({this.error});
+
+  @override
+  List<Object> get props => [error];
+}

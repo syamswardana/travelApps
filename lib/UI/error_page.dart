@@ -5,8 +5,13 @@ class ErrorPage extends StatelessWidget {
   ErrorPage({this.msg});
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(msg),
+    return Container(
+      child: Center(
+        child: Text(
+          msg,
+          style: TextStyle(color: Colors.black),
+        ),
+      ),
     );
   }
 }

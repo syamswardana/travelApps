@@ -9,7 +9,6 @@ import 'package:travelApps/UI/explore_page.dart';
 import 'package:travelApps/UI/home_page.dart';
 import 'package:travelApps/UI/plan_page.dart';
 import 'package:travelApps/UI/settings_page.dart';
-import 'package:travelApps/baseUI/row_activity.dart';
 
 class Navigation extends StatefulWidget {
   @override
@@ -18,43 +17,10 @@ class Navigation extends StatefulWidget {
 
 class _NavigationState extends State<Navigation> {
   int _selectedIndex = 0;
-  List<Activity> _activity = [];
-  List<Widget> _baris = [];
   List<Place> _places = [];
   Weather _weather;
 
   _NavigationState() {
-    _activity.add(new Activity(
-        time: new DateTime(2021, 3, 16, 08, 30),
-        activityName: "Breakfast",
-        place: "Warung padang",
-        icon: Icons.shopping_bag.codePoint,
-        done: true));
-    _activity.add(new Activity(
-        time: new DateTime(2021, 3, 16, 10, 00),
-        activityName: "Swiming",
-        place: "Waterboom Boomer",
-        icon: Icons.shopping_bag.codePoint));
-    _activity.add(new Activity(
-        time: new DateTime(2021, 3, 16, 12, 00),
-        activityName: "Shoping",
-        place: "Matahari",
-        icon: Icons.shopping_bag.codePoint));
-    _activity.add(new Activity(
-        time: new DateTime(2021, 3, 16, 15, 00),
-        activityName: "Shoping",
-        place: "Matahari",
-        icon: Icons.shopping_bag.codePoint));
-    _activity.add(new Activity(
-        time: new DateTime(2021, 3, 16, 19, 30),
-        activityName: "Shoping",
-        place: "Matahari",
-        icon: Icons.shopping_bag.codePoint));
-    for (int i = 0; i < _activity.length; i++) {
-      Activity activity = _activity[i];
-      _baris.add(RowActivity(i, activity.time, activity.activityName,
-          activity.place, activity.icon, activity.done));
-    }
     WeatherApi.determinePosition().then((position) {
       WeatherApi.getWeather(
               position.latitude.toString(), position.longitude.toString())
@@ -88,7 +54,7 @@ class _NavigationState extends State<Navigation> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: (_selectedIndex == 0)
-          ? HomePage(weather: _weather, activities: _activity)
+          ? HomePage(weather: _weather)
           : (_selectedIndex == 1)
               ? PlanPage()
               : (_selectedIndex == 2)

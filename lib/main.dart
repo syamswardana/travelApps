@@ -9,6 +9,7 @@ import 'package:travelApps/UI/welcome_page.dart';
 import 'package:travelApps/UI/wrapper.dart';
 import 'package:travelApps/bloc/activitiescrud_bloc.dart';
 import 'package:travelApps/bloc/activitiesonline_bloc.dart';
+import 'package:travelApps/bloc/plans_bloc.dart';
 // import 'package:travelApps/Firebase/auth_services.dart';
 
 void main() {
@@ -86,6 +87,9 @@ class _MyAppState extends State<MyApp> {
             ),
             BlocProvider<ActivitiesOnlineBloc>(
               create: (context) => ActivitiesOnlineBloc(),
+            ),
+            BlocProvider<PlansBloc>(
+              create: (context) => PlansBloc(),
             )
           ],
           child: MaterialApp(

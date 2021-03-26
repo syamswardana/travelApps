@@ -110,7 +110,7 @@ class _NewPlanPageState extends State<NewPlanPage> {
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return AddDayPage(
                       startDate: _rangeStartDate,
-                      endDate: _rangeEndDate,
+                      endDate: _rangeEndDate ?? _rangeStartDate,
                       planName: _planName.text,
                     );
                   }));

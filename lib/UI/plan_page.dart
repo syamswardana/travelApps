@@ -1,16 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:travelApps/Firebase/model_plan.dart';
 import 'package:travelApps/Objek/plan.dart';
 import 'package:travelApps/UI/detail_plan.dart';
 import 'package:travelApps/UI/error_page.dart';
 import 'package:travelApps/UI/loading_page.dart';
 import 'package:travelApps/UI/new_plan_page.dart';
+import 'package:travelApps/bloc/plans_bloc.dart';
 
-class PlanPage extends StatelessWidget {
+class PlanPage extends StatefulWidget {
+  @override
+  _PlanPageState createState() => _PlanPageState();
+}
+
+class _PlanPageState extends State<PlanPage> {
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<User>(context);
@@ -30,75 +36,62 @@ class PlanPage extends StatelessWidget {
         height: double.infinity,
         color: Colors.grey[50],
         padding: EdgeInsets.only(left: 20, right: 20),
-        child: FutureBuilder(
-            future: ModelPlan.getPlans(user.uid),
-            initialData: [],
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return ErrorPage(
-                  msg: snapshot.error,
-                );
-              } else if (snapshot.connectionState == ConnectionState.waiting) {
-                return LoadingPage();
-              } else if (snapshot.connectionState == ConnectionState.done) {
-                List<dynamic> docs = snapshot.data;
-                List<Plan> _plans = [];
-                docs.forEach((doc) {
-                  _plans.add(Plan(
-                    id: doc.id,
-                    startDate: (doc["startDate"] as Timestamp).toDate(),
-                    endDate: (doc["endDate"] as Timestamp).toDate(),
-                    planName: doc["planName"],
-                    thumbnail: null,
-                  ));
-                });
+        child: BlocBuilder<PlansBloc, PlansState>(builder: (context, state) {
+          if (state is PlansError) {
+            return ErrorPage(
+              msg: "Unknown error",
+            );
+          } else if (state is PlansInitial) {
+            return LoadingPage();
+          } else if (state is PlansLoaded) {
+            List<Plan> _plans = state.plans ?? [];
 
-                return GridView.builder(
-                  itemCount: _plans.length + 1,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 20,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 0.60,
-                  ),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return Card(
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return NewPlanPage();
-                              }));
-                            },
-                            child: Center(
-                                child: Icon(
-                              Icons.add_circle_outline,
-                              size: 45,
-                              color: Color(0xff3FD4A2),
-                            )),
-                          ));
-                    } else {
-                      return InkWell(
-                          onTap: () {
-                            // print(_plans[index - 1].id);
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (context) {
-                              return DetailPlan(
-                                plan: _plans[index - 1],
-                              );
-                            }));
-                          },
-                          child: PlanCard(plan: _plans[index - 1]));
-                    }
-                  },
-                );
-              }
-              return Container();
-            }),
+            return GridView.builder(
+              itemCount: _plans.length + 1,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.60,
+              ),
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return NewPlanPage();
+                          }));
+                        },
+                        child: Center(
+                            child: Icon(
+                          Icons.add_circle_outline,
+                          size: 45,
+                          color: Color(0xff3FD4A2),
+                        )),
+                      ));
+                } else {
+                  return InkWell(
+                      onTap: () async {
+                        // print(_plans[index - 1].id);
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return DetailPlan(
+                            plan: _plans[index - 1],
+                          );
+                        }));
+                      },
+                      child: PlanCard(plan: _plans[index - 1]));
+                }
+              },
+            );
+          }
+          return Container();
+        }),
       ),
     );
   }

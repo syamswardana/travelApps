@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +14,7 @@ import 'package:travelApps/UI/error_page.dart';
 import 'package:travelApps/UI/loading_page.dart';
 import 'package:travelApps/baseUI/row_activity.dart';
 import 'package:travelApps/bloc/activitiesonline_bloc.dart';
+import 'package:travelApps/bloc/plans_bloc.dart';
 
 class DetailPlan extends StatefulWidget {
   final Plan plan;
@@ -41,11 +43,31 @@ class _DetailPlanState extends State<DetailPlan> {
   void initState() {
     _timeController.text = DateFormat("Hm").format(DateTime(
         plan.startDate.year, plan.startDate.month, plan.startDate.day));
-    int numDays = plan.endDate.difference(plan.startDate).inDays + 1;
+    int numDays = (plan.endDate != null)
+        ? plan.endDate.difference(plan.startDate).inDays + 1
+        : 1;
     for (var i = 0; i < numDays; i++) {
       DateTime tempDate = plan.startDate.add(new Duration(days: i));
       days.add(tempDate);
     }
+    ModelActivity.getActivities(plan.id).then((docs) {
+      List<Activity> activities = [];
+      docs.forEach((doc) {
+        activities.add(Activity(
+            id: doc.id,
+            planId: doc["planId"],
+            activityName: doc["activityName"],
+            done: false,
+            icon: doc["icon"],
+            place: doc["place"],
+            time: (doc["time"] as Timestamp).toDate()));
+      });
+      context
+          .read<ActivitiesOnlineBloc>()
+          .add(SetActivities(activities: activities));
+    }).catchError((error) {
+      context.read<ActivitiesOnlineBloc>().add(SetToError(error: "error"));
+    });
     super.initState();
   }
 
@@ -214,35 +236,19 @@ class _DetailPlanState extends State<DetailPlan> {
       color: Colors.grey,
       fontSize: 12,
     );
-    return FutureBuilder(
-        initialData: [],
-        future: ModelActivity.getActivities(plan.id),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return ErrorPage(
-              msg: snapshot.error,
-            );
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return LoadingPage();
-          } else if (snapshot.hasData) {
-            List<Activity> activities = [];
-            for (var doc in snapshot.data) {
-              activities.add(Activity(
-                  id: doc.id,
-                  planId: doc["planId"],
-                  activityName: doc["activityName"],
-                  done: false,
-                  icon: doc["icon"],
-                  place: doc["place"],
-                  time: (doc["time"] as Timestamp).toDate()));
-            }
-            context
-                .read<ActivitiesOnlineBloc>()
-                .add(SetActivities(activities: activities));
-          }
-          return DefaultTabController(
-            length: days.length,
-            child: Scaffold(
+    User user = Provider.of<User>(context);
+    return BlocBuilder<ActivitiesOnlineBloc, ActivitiesOnlineState>(
+      builder: (context, state) {
+        if (state is ActivitiesOnlineInitial) {
+          return LoadingPage();
+        } else if (state is ActivitiesOnlineError) {
+          return ErrorPage(
+            msg: state.error,
+          );
+        }
+        return DefaultTabController(
+          length: days.length,
+          child: Scaffold(
               resizeToAvoidBottomInset: false,
               appBar: AppBar(
                 backgroundColor: Colors.white,
@@ -262,7 +268,10 @@ class _DetailPlanState extends State<DetailPlan> {
                         });
                       });
                       ModelPlan.deletePlan(plan.id);
-                      Navigator.of(context).pop();
+                      context
+                          .read<PlansBloc>()
+                          .add(RefreshPlans(uid: user.uid));
+                      Navigator.of(context).pop(true);
                     },
                   )
                 ],
@@ -314,283 +323,264 @@ class _DetailPlanState extends State<DetailPlan> {
                   ),
                 ),
                 color: Color(0xff3FD4A2),
-                onPressed: () async {
-                  List<Activity> deleted = context
-                      .select<ActivitiesOnlineBloc, List<Activity>>((bloc) {
-                    return (bloc.state is ActivitiesOnlineInitial)
-                        ? []
-                        : (bloc.state as ActivitiesOnlineLoaded)
-                            .deletedActivities;
-                  });
-                  List<Activity> activities = context
-                      .select<ActivitiesOnlineBloc, List<Activity>>((bloc) {
-                    return (bloc.state is ActivitiesOnlineInitial)
-                        ? []
-                        : (bloc.state as ActivitiesOnlineLoaded).activities;
-                  });
-                  activities.forEach((activity) {
-                    if (activity.id == null) {
-                      ModelActivity.addActivity(activity.toMap());
-                    }
-                  });
-
-                  deleted.forEach((activity) {
-                    ModelActivity.deleteActivity(activity.id);
-                  });
-
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                onPressed: () {
+                  List<Activity> deleted =
+                      (state as ActivitiesOnlineLoaded).deletedActivities;
+                  List<Activity> activities =
+                      (state as ActivitiesOnlineLoaded).activities;
+                  if (activities != null && activities.length != 0) {
+                    activities.forEach((activity) async {
+                      if (activity.id == null) {
+                        await ModelActivity.addActivity(activity.toMap());
+                      }
+                    });
+                  }
+                  if (deleted != null && deleted.length != 0) {
+                    deleted.forEach((activity) async {
+                      await ModelActivity.deleteActivity(activity.id);
+                    });
+                  }
+                  context.read<PlansBloc>().add(RefreshPlans(uid: user.uid));
+                  Navigator.of(context).pop();
                 },
               ),
-              body: BlocBuilder<ActivitiesOnlineBloc, ActivitiesOnlineState>(
-                builder: (context, state) {
-                  List<Activity> activities = (state is ActivitiesOnlineInitial)
-                      ? []
-                      : (state as ActivitiesOnlineLoaded).activities;
-                  return TabBarView(
-                      children: List<Widget>.generate(days.length, (index) {
-                    List<Activity> activitiesDay = [];
-                    for (var activity in activities) {
-                      if (activity.time.day == days[index].day)
-                        activitiesDay.add(activity);
-                    }
-                    activitiesDay.sort((a, b) {
-                      return a.time.compareTo(b.time);
-                    });
-                    return Container(
-                      padding: EdgeInsets.all(20),
-                      height: double.infinity,
-                      width: double.infinity,
-                      child: Column(
+              body: TabBarView(
+                  children: List<Widget>.generate(days.length, (index) {
+                List<Activity> activitiesDay = [];
+                for (var activity
+                    in (state as ActivitiesOnlineLoaded).activities) {
+                  if (activity.time.day == days[index].day)
+                    activitiesDay.add(activity);
+                }
+                activitiesDay.sort((a, b) {
+                  return a.time.compareTo(b.time);
+                });
+                return Container(
+                  padding: EdgeInsets.all(20),
+                  height: double.infinity,
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  _selectTime(context, days[index]);
-                                },
-                                child: Container(
-                                  height: 40,
-                                  width: 100,
-                                  child: TextFormField(
-                                    enabled: false,
-                                    controller: _timeController,
-                                    style: TextStyle(
-                                        fontSize: 14, color: Colors.black),
-                                    keyboardType: TextInputType.text,
-                                    decoration: InputDecoration(
-                                        contentPadding:
-                                            EdgeInsets.symmetric(vertical: 10),
-                                        disabledBorder: OutlineInputBorder(
-                                            borderSide:
-                                                BorderSide(color: Colors.grey),
-                                            borderRadius:
-                                                BorderRadius.circular(25)),
-                                        prefixIcon: Icon(
-                                          Icons.access_time,
-                                          color: Color(0xff3FD4A2),
-                                        )),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Container(
-                                    height: 40,
-                                    padding: EdgeInsets.only(left: 25),
-                                    margin: EdgeInsets.only(left: 10),
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.grey),
+                          InkWell(
+                            onTap: () {
+                              _selectTime(context, days[index]);
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 100,
+                              child: TextFormField(
+                                enabled: false,
+                                controller: _timeController,
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.black),
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                    contentPadding:
+                                        EdgeInsets.symmetric(vertical: 10),
+                                    disabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.grey),
                                         borderRadius:
                                             BorderRadius.circular(25)),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: TextFormField(
-                                            controller: _activityController,
-                                            autovalidateMode: AutovalidateMode
-                                                .onUserInteraction,
-                                            validator: (value) {
-                                              return (msgActivity != null ||
-                                                      msgActivity != "")
-                                                  ? msgActivity
-                                                  : null;
-                                            },
-                                            onChanged: (value) {
-                                              (value != null || value != "")
-                                                  ? msgActivity = null
-                                                  : null;
-                                            },
-                                            textAlignVertical:
-                                                TextAlignVertical.center,
-                                            decoration: InputDecoration(
-                                                contentPadding:
-                                                    EdgeInsets.symmetric(
-                                                        vertical: 15),
-                                                border: InputBorder.none,
-                                                hintText: "Activity",
-                                                hintStyle: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.black)),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            icon,
-                                            size: 20,
-                                            color: Color(0xff3FD4A2),
-                                          ),
-                                          onPressed: () {
-                                            _chooseIcon();
-                                          },
-                                        )
-                                      ],
+                                    prefixIcon: Icon(
+                                      Icons.access_time,
+                                      color: Color(0xff3FD4A2),
                                     )),
-                              )
-                            ],
-                          ),
-                          SizedBox(
-                            height: 15,
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  margin: EdgeInsets.only(right: 10),
-                                  height: 40,
-                                  child: TextFormField(
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    controller: _placeController,
-                                    style: TextStyle(fontSize: 14),
-                                    validator: (value) {
-                                      return (msgPlace != null ||
-                                              msgPlace != "")
-                                          ? msgPlace
-                                          : null;
-                                    },
-                                    onChanged: (value) {
-                                      (value != null || value != "")
-                                          ? msgPlace = null
-                                          : null;
-                                    },
-                                    decoration: InputDecoration(
-                                        hintText: "Place",
-                                        border: OutlineInputBorder(
-                                            borderSide:
-                                                BorderSide(color: Colors.grey),
-                                            borderRadius:
-                                                BorderRadius.circular(25)),
-                                        contentPadding: EdgeInsets.symmetric(
-                                            vertical: 5, horizontal: 20)),
-                                  ),
-                                ),
                               ),
-                              SizedBox(
-                                height: 40,
-                                width: 120,
-                                child: FlatButton(
-                                  onPressed: () {
-                                    if (_activityController.text != "" &&
-                                        _placeController.text != "") {
-                                      DateTime time = DateTime(
-                                          days[index].year,
-                                          days[index].month,
-                                          days[index].day,
-                                          selectedTime.hour,
-                                          selectedTime.minute);
-                                      Activity activity = new Activity(
-                                          activityName:
-                                              _activityController.text,
-                                          time: time,
-                                          place: _placeController.text,
-                                          icon: icon.codePoint);
-
-                                      context
-                                          .read<ActivitiesOnlineBloc>()
-                                          .add(AddActivity(activity: activity));
-                                      _activityController.text = "";
-                                      _placeController.text = "";
-                                    } else {
-                                      if (_activityController.text == "") {
-                                        msgActivity = "Fill activity name";
-                                      }
-                                      if (_placeController.text == "") {
-                                        msgPlace = "Fill place name";
-                                      }
-                                      setState(() {});
-                                    }
-                                  },
-                                  color: Color(0xffDEF4ED),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30)),
-                                  minWidth: double.infinity,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    child: Text(
-                                      "Add activity",
-                                      style: TextStyle(
-                                          color: Color(0xff3FD4A2),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Divider(
-                            color: Colors.grey,
-                            height: 30,
+                            ),
                           ),
                           Expanded(
-                            child: (activitiesDay == null)
-                                ? Container()
-                                : ListView.builder(
-                                    itemCount: activitiesDay.length,
-                                    itemBuilder: (context, index) {
-                                      return Row(
-                                        children: [
-                                          Expanded(
-                                            child: RowActivity(
-                                                index,
-                                                activitiesDay[index].time,
-                                                activitiesDay[index]
-                                                    .activityName,
-                                                activitiesDay[index].place,
-                                                activitiesDay[index].icon,
-                                                false),
-                                          ),
-                                          SizedBox(
-                                            width: 20,
-                                          ),
-                                          IconButton(
-                                            onPressed: () {
-                                              context
-                                                  .read<ActivitiesOnlineBloc>()
-                                                  .add(DeleteActivity(
-                                                      index: index));
-                                            },
-                                            icon: Icon(
-                                              Icons.cancel,
-                                              color: Colors.red,
-                                            ),
-                                          )
-                                        ],
-                                      );
-                                    },
-                                  ),
+                            child: Container(
+                                height: 40,
+                                padding: EdgeInsets.only(left: 25),
+                                margin: EdgeInsets.only(left: 10),
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(25)),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _activityController,
+                                        autovalidateMode:
+                                            AutovalidateMode.onUserInteraction,
+                                        validator: (value) {
+                                          if (value != null || value != "") {
+                                            msgActivity = null;
+                                          }
+                                          return (msgActivity != null ||
+                                                  msgActivity != "")
+                                              ? msgActivity
+                                              : null;
+                                        },
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
+                                        decoration: InputDecoration(
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    vertical: 15),
+                                            border: InputBorder.none,
+                                            hintText: "Activity",
+                                            hintStyle: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black)),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        icon,
+                                        size: 20,
+                                        color: Color(0xff3FD4A2),
+                                      ),
+                                      onPressed: () {
+                                        _chooseIcon();
+                                      },
+                                    )
+                                  ],
+                                )),
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              margin: EdgeInsets.only(right: 10),
+                              height: 40,
+                              child: TextFormField(
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                controller: _placeController,
+                                style: TextStyle(fontSize: 14),
+                                validator: (value) {
+                                  if (value != null || value != "") {
+                                    msgPlace = null;
+                                  }
+                                  return (msgPlace != null || msgPlace != "")
+                                      ? msgPlace
+                                      : null;
+                                },
+                                decoration: InputDecoration(
+                                    hintText: "Place",
+                                    border: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.grey),
+                                        borderRadius:
+                                            BorderRadius.circular(25)),
+                                    contentPadding: EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 20)),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 40,
+                            width: 120,
+                            child: FlatButton(
+                              onPressed: () {
+                                if (_activityController.text != "" &&
+                                    _placeController.text != "") {
+                                  DateTime time = DateTime(
+                                      days[index].year,
+                                      days[index].month,
+                                      days[index].day,
+                                      selectedTime.hour,
+                                      selectedTime.minute);
+                                  Activity activity = new Activity(
+                                      planId: plan.id,
+                                      activityName: _activityController.text,
+                                      time: time,
+                                      place: _placeController.text,
+                                      icon: icon.codePoint);
+
+                                  context
+                                      .read<ActivitiesOnlineBloc>()
+                                      .add(AddActivity(activity: activity));
+                                  _activityController.text = "";
+                                  _placeController.text = "";
+                                } else {
+                                  if (_activityController.text == "") {
+                                    msgActivity = "Fill activity name";
+                                  }
+                                  if (_placeController.text == "") {
+                                    msgPlace = "Fill place name";
+                                  }
+                                  setState(() {});
+                                }
+                              },
+                              color: Color(0xffDEF4ED),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30)),
+                              minWidth: double.infinity,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  "Add activity",
+                                  style: TextStyle(
+                                      color: Color(0xff3FD4A2),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    );
-                  }));
-                },
-              ),
-            ),
-          );
-        });
+                      Divider(
+                        color: Colors.grey,
+                        height: 30,
+                      ),
+                      Expanded(
+                        child: (activitiesDay == null)
+                            ? Container()
+                            : ListView.builder(
+                                itemCount: activitiesDay.length,
+                                itemBuilder: (context, index) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: RowActivity(
+                                            index,
+                                            activitiesDay[index].time,
+                                            activitiesDay[index].activityName,
+                                            activitiesDay[index].place,
+                                            activitiesDay[index].icon,
+                                            false),
+                                      ),
+                                      SizedBox(
+                                        width: 20,
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          context
+                                              .read<ActivitiesOnlineBloc>()
+                                              .add(
+                                                  DeleteActivity(index: index));
+                                        },
+                                        icon: Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                        ),
+                                      )
+                                    ],
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                );
+              }))),
+        );
+      },
+    );
   }
 }

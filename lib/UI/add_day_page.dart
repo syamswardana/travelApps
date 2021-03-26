@@ -9,6 +9,7 @@ import 'package:travelApps/Objek/activity.dart';
 import 'package:travelApps/Objek/plan.dart';
 import 'package:travelApps/bloc/activitiescrud_bloc.dart';
 import 'package:travelApps/baseUI/row_activity.dart';
+import 'package:travelApps/bloc/plans_bloc.dart';
 
 class AddDayPage extends StatefulWidget {
   final DateTime startDate, endDate;
@@ -44,7 +45,8 @@ class _AddDayPageState extends State<AddDayPage> {
   void initState() {
     _timeController.text = DateFormat("Hm")
         .format(DateTime(startDate.year, startDate.month, startDate.day));
-    int numDays = endDate.difference(startDate).inDays + 1;
+    int numDays =
+        (endDate != null) ? endDate.difference(startDate).inDays + 1 : 1;
     for (var i = 0; i < numDays; i++) {
       DateTime tempDate = startDate.add(new Duration(days: i));
       days.add(tempDate);
@@ -66,10 +68,10 @@ class _AddDayPageState extends State<AddDayPage> {
   }
 
   Future<bool> _onWillPop() async {
-    if (context.read<ActivitiesCrudBloc>().state is ActivitiesCrudLoaded) {
-      context.read<ActivitiesCrudBloc>().add(SetToNull());
-    }
-    Navigator.pop(context);
+    // if (context.read<ActivitiesCrudBloc>().state is ActivitiesCrudLoaded) {
+    //   context.read<ActivitiesCrudBloc>().add(SetToNull());
+    // }
+    // Navigator.pop(context);
     return true;
   }
 
@@ -309,6 +311,7 @@ class _AddDayPageState extends State<AddDayPage> {
                   is ActivitiesCrudLoaded) {
                 context.read<ActivitiesCrudBloc>().add(SetToNull());
               }
+              context.read<PlansBloc>().add(RefreshPlans(uid: user.uid));
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
           ),

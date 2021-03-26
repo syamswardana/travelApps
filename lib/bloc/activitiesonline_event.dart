@@ -28,3 +28,8 @@ class SetActivities extends ActivitiesOnlineEvent {
   @override
   List<Object> get props => [activities];
 }
+
+class SetToError extends ActivitiesOnlineEvent {
+  final String error;
+  SetToError({this.error});
+}
