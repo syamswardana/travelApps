@@ -6,9 +6,9 @@ import 'package:travelApps/UI/destination_type.dart';
 import 'package:travelApps/UI/detination_page.dart';
 
 class ExplorePage extends StatelessWidget {
-  List<Place> places;
+  final List<Place> places;
   ExplorePage({this.places});
-  List<String> typeDestination = [
+  final List<String> typeDestination = [
     "Amusement Park",
     "Restaurant",
     "Tourist Attraction"

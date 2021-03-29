@@ -4,10 +4,16 @@ import 'package:provider/provider.dart';
 import 'package:travelApps/Firebase/auth_services.dart';
 
 class SettingsPage extends StatelessWidget {
+  final globalKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<User>(context);
+    SnackBar snackBar = SnackBar(
+      duration: Duration(seconds: 1),
+      content: Text("Fitur belum tersedia"),
+    );
     return Scaffold(
+      key: globalKey,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
@@ -41,26 +47,34 @@ class SettingsPage extends StatelessWidget {
               ),
               (user.displayName != null) ? user.displayName : user.email,
               (user.displayName != null) ? user.email : "Freelancer",
-              RaisedButton(
-                child: Text(
-                  "Edit",
-                  style: TextStyle(color: Color(0xff3FD4A2), fontSize: 12),
+              SizedBox(
+                width: 50,
+                child: RaisedButton(
+                  padding: EdgeInsets.symmetric(horizontal: 0),
+                  visualDensity: VisualDensity.compact,
+                  child: Text(
+                    "Edit",
+                    style: TextStyle(color: Color(0xff3FD4A2), fontSize: 12),
+                  ),
+                  onPressed: () {
+                    globalKey.currentState.showSnackBar(snackBar);
+                  },
+                  color: Color(0xffE2F9F1),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                 ),
-                onPressed: () {},
-                color: Color(0xffE2F9F1),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
               )),
           listSetting(
               //payment
               Icon(Icons.account_balance_wallet),
               "Payment methods",
               "Manage your card",
-              RaisedButton(
-                onPressed: () {},
-                color: Colors.white,
-                elevation: 0,
-                child: Icon(Icons.arrow_forward),
+              IconButton(
+                onPressed: () {
+                  globalKey.currentState.showSnackBar(snackBar);
+                },
+                color: Colors.black,
+                icon: Icon(Icons.arrow_forward),
               ),
               true),
           listSetting(
@@ -68,11 +82,12 @@ class SettingsPage extends StatelessWidget {
               Icon(Icons.confirmation_number_rounded),
               "Discounts",
               "Check out your discounts",
-              RaisedButton(
-                onPressed: () {},
-                color: Colors.white,
-                elevation: 0,
-                child: Icon(Icons.arrow_forward),
+              IconButton(
+                onPressed: () {
+                  globalKey.currentState.showSnackBar(snackBar);
+                },
+                color: Colors.black,
+                icon: Icon(Icons.arrow_forward),
               ),
               true),
           listSetting(
@@ -80,11 +95,12 @@ class SettingsPage extends StatelessWidget {
               Icon(Icons.notifications),
               "Notifications",
               "Notification preferences",
-              RaisedButton(
-                onPressed: () {},
-                color: Colors.white,
-                elevation: 0,
-                child: Icon(Icons.arrow_forward),
+              IconButton(
+                onPressed: () {
+                  globalKey.currentState.showSnackBar(snackBar);
+                },
+                color: Colors.black,
+                icon: Icon(Icons.arrow_forward),
               ),
               true),
           listSetting(
@@ -92,11 +108,12 @@ class SettingsPage extends StatelessWidget {
               Icon(Icons.access_time_rounded),
               "Time Zone",
               "Change your time zone",
-              RaisedButton(
-                onPressed: () {},
-                color: Colors.white,
-                elevation: 0,
-                child: Icon(Icons.arrow_forward),
+              IconButton(
+                onPressed: () {
+                  globalKey.currentState.showSnackBar(snackBar);
+                },
+                color: Colors.black,
+                icon: Icon(Icons.arrow_forward),
               ),
               true),
           InkWell(
@@ -159,20 +176,27 @@ class SettingsPage extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                        fontSize: (!kecil) ? 18 : 16,
-                        fontWeight: FontWeight.bold),
+                  SizedBox(
+                    width: 180,
+                    child: Text(
+                      title,
+                      softWrap: true,
+                      style: TextStyle(
+                          fontSize: (!kecil) ? 18 : 16,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                   SizedBox(
                     height: 5,
                   ),
-                  Text(
-                    subtitle,
-                    softWrap: true,
-                    style: TextStyle(
-                        color: Colors.grey, fontSize: (!kecil) ? 14 : 12),
+                  SizedBox(
+                    width: 180,
+                    child: Text(
+                      subtitle,
+                      softWrap: true,
+                      style: TextStyle(
+                          color: Colors.grey, fontSize: (!kecil) ? 14 : 12),
+                    ),
                   )
                 ],
               ),

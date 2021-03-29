@@ -391,9 +391,9 @@ class _AddDayPageState extends State<AddDayPage> {
                                               : null;
                                         },
                                         onChanged: (value) {
-                                          (value != null || value != "")
-                                              ? msgActivity = null
-                                              : null;
+                                          if (value != null || value != "") {
+                                            msgActivity = null;
+                                          }
                                         },
                                         textAlignVertical:
                                             TextAlignVertical.center,
@@ -443,9 +443,9 @@ class _AddDayPageState extends State<AddDayPage> {
                                       : null;
                                 },
                                 onChanged: (value) {
-                                  (value != null || value != "")
-                                      ? msgPlace = null
-                                      : null;
+                                  if (value != null || value != "") {
+                                    msgPlace = null;
+                                  }
                                 },
                                 decoration: InputDecoration(
                                     hintText: "Place",

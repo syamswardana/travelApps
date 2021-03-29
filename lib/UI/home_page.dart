@@ -108,7 +108,7 @@ class HomePage extends StatelessWidget {
           List<String> plansId = [];
           DateTime now = DateTime.now();
           DateTime today = DateTime(now.year, now.month, now.day);
-          DateTime tommorow = DateTime(now.year, now.month, now.day);
+          // DateTime tommorow = DateTime(now.year, now.month, now.day);
           if (state is PlansInitial) {
             return LoadingPage();
           } else if (state is PlansError) {

@@ -6,9 +6,11 @@ import 'package:travelApps/UI/form_email.dart';
 import 'package:travelApps/UI/navigation.dart';
 
 class StartedPage extends StatelessWidget {
+  final globalKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: globalKey,
         backgroundColor: Colors.white,
         appBar: AppBar(
           elevation: 0, //effect timbul bawah
@@ -109,6 +111,9 @@ class StartedPage extends StatelessWidget {
                           textColor: Colors.white,
                           onPress: () {
                             print("test");
+                            final SnackBar snackBar =
+                                SnackBar(content: Text("Fitur belum tersedia"));
+                            globalKey.currentState.showSnackBar(snackBar);
                           }),
                       SizedBox(
                         height: 20,

@@ -26,14 +26,15 @@ class _NewPlanPageState extends State<NewPlanPage> {
     if (args.value is PickerDateRange) {
       _rangeStartDate = args.value.startDate;
       _rangeEndDate = args.value.endDate;
-    } else if (args.value is DateTime) {
-      print("one");
-      final DateTime selectedDate = args.value;
-    } else if (args.value is List<DateTime>) {
-      final List<DateTime> selectedDates = args.value;
-    } else {
-      final List<PickerDateRange> selectedRanges = args.value;
     }
+    // else if (args.value is DateTime) {
+    //   print("one");
+    //   final DateTime selectedDate = args.value;
+    // } else if (args.value is List<DateTime>) {
+    //   final List<DateTime> selectedDates = args.value;
+    // } else {
+    //   final List<PickerDateRange> selectedRanges = args.value;
+    // }
   }
 
   @override
@@ -66,7 +67,9 @@ class _NewPlanPageState extends State<NewPlanPage> {
                 style: TextStyle(fontSize: 14),
                 controller: _planName,
                 onChanged: (value) {
-                  (value != null || value != "") ? _ePlanName = null : null;
+                  if (value != null || value != "") {
+                    _ePlanName = null;
+                  }
                 },
                 validator: (value) {
                   return (_ePlanName != null || _ePlanName != "")

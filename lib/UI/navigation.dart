@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:travelApps/API/place_api.dart';
 import 'package:travelApps/API/weather_api.dart';
-import 'package:travelApps/Objek/activity.dart';
 import 'package:travelApps/Objek/place.dart';
 import 'package:travelApps/Objek/weather.dart';
 import 'package:travelApps/UI/explore_page.dart';

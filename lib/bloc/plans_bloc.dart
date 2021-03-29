@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:travelApps/Firebase/model_activity.dart';
 import 'package:travelApps/Firebase/model_plan.dart';
 import 'package:travelApps/Objek/plan.dart';
 
